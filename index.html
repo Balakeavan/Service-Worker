@@ -25,5 +25,53 @@
             });
         }
     </script>
+     <script>
+        // Service Worker Registration (as before)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // PWA Install Prompt Logic
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            // Prevent the default browser install prompt
+            event.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = event;
+            // Show your custom install button
+            installButton.style.display = 'block';
+            console.log('beforeinstallprompt event fired.');
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Show the install prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to install prompt: ${outcome}`);
+                // Clear the deferredPrompt variable as it can only be used once
+                deferredPrompt = null;
+                // Hide your custom install button
+                installButton.style.display = 'none';
+            }
+        });
+
+        // Optional: Listen for appinstalled event to hide the button if the app is already installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed!');
+            installButton.style.display = 'none';
+        });
+    </script>
 </body>
 </html>
