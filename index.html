@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Worker Example</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Hello Service Worker!</h1>
+    <p>This page demonstrates basic service worker functionality.</p>
+
+    <script src="app.js"></script>
+    <script>
+        // Check if service workers are supported by the browser
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
