@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Worker Example</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="/manifest.json"> <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
     <h1>Hello Service Worker!</h1>
     <p>This pages demonstrates basic service worker functionality...</p>
-
+ <button id="installButton" style="display: none;">Install App</button>
     <script src="app.js"></script>
     <script>
         // Check if service workers are supported by the browser
