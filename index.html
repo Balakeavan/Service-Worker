@@ -9,8 +9,13 @@
 </head>
 <body>
     <h1>Hello Service Worker with install application!</h1>
-    <p>This pages demonstrates basic service worker functionality..</p>
- <button id="installButton" style="display: none;">Install Application</button>
+    <p>This pages demonstrates basic service worker functionality </p>
+<div id="install-banner" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000;">
+  <p id="install-text" style="margin: 0; font-size: 16px;"></p>
+  <button id="installBtn" style="margin-top: 10px; padding: 8px 12px; font-size: 14px;">Install</button>
+  <button onclick="document.getElementById('install-banner').style.display='none'" style="margin-top: 10px; padding: 8px 12px; font-size: 14px;">Close</button>
+</div>
+
     <script src="app.js"></script>
     <script>
         // Check if service workers are supported by the browser
@@ -26,53 +31,51 @@
             });
         }
     </script>
-     <script>
-        // Service Worker Registration (as before)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registered successfully with scope:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.error('Service Worker registration failed:', error);
-                    });
+    <script>
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+const installBanner = document.getElementById('install-banner');
+const installText = document.getElementById('install-text');
+
+// Detect browser
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+// Hide if already installed
+if (isStandalone) {
+    installBanner.style.display = 'none';
+} else if ('beforeinstallprompt' in window) {
+    // Chromium (Chrome, Edge, Brave)
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installText.textContent = "Install this app for a better experience.";
+        installBtn.style.display = 'inline-block';
+        installBanner.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => {
+                deferredPrompt = null;
+                installBanner.style.display = 'none';
             });
         }
+    });
+} else if (isSafari) {
+    // Safari (iOS/Mac)
+    installText.textContent = "To install, tap the Share icon and select 'Add to Home Screen'.";
+    installBtn.style.display = 'none';
+    installBanner.style.display = 'block';
+} else if (isFirefox) {
+    // Firefox
+    installText.textContent = "To install, open the browser menu and select 'Install' or 'Add to Home Screen'.";
+    installBtn.style.display = 'none';
+    installBanner.style.display = 'block';
+}
+</script>
 
-        // PWA Install Prompt Logic
-        let deferredPrompt;
-        const installButton = document.getElementById('installButton');
-
-        window.addEventListener('beforeinstallprompt', (event) => {
-            // Prevent the default browser install prompt
-            event.preventDefault();
-            // Stash the event so it can be triggered later
-            deferredPrompt = event;
-            // Show your custom install button
-            installButton.style.display = 'block';
-            console.log('beforeinstallprompt event fired.');
-        });
-
-        installButton.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                // Show the install prompt
-                deferredPrompt.prompt();
-                // Wait for the user to respond to the prompt
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to install prompt: ${outcome}`);
-                // Clear the deferredPrompt variable as it can only be used once
-                deferredPrompt = null;
-                // Hide your custom install button
-                installButton.style.display = 'none';
-            }
-        });
-
-        // Optional: Listen for appinstalled event to hide the button if the app is already installed
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA was installed!');
-            installButton.style.display = 'none';
-        });
-    </script>
 </body>
 </html>
